@@ -13,5 +13,4 @@ offline_store:
   database: feast
   user: feast
   password: feast123
-  ssl_mode: disable
 # Feature server configuration is handled by the operator
