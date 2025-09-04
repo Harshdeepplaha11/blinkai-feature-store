@@ -1,4 +1,4 @@
-from feast import DataSource, FileSource
+from feast import FileSource
 from feast.data_format import ParquetFormat
 from feast.infra.offline_stores.contrib.postgres_offline_store.postgres_source import PostgreSQLSource
 
