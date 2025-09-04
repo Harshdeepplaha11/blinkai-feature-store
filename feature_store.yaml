@@ -14,6 +14,4 @@ offline_store:
   user: feast
   password: feast123
   ssl_mode: disable
-feature_server:
-  host: 0.0.0.0
-  port: 6566
+# Feature server configuration is handled by the operator
