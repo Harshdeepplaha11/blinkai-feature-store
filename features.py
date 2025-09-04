@@ -60,15 +60,16 @@ account_features = FeatureView(
 )
 
 # User account relationship features
-user_account_features = FeatureView(
-    name="user_account_features",
-    entities=["user_id", "account_id"],
-    ttl=timedelta(days=7),
-    features=[
-        Feature(name="user_account_count", dtype=ValueType.INT64),
-        Feature(name="total_user_balance", dtype=ValueType.FLOAT),
-        Feature(name="avg_user_risk_score", dtype=ValueType.FLOAT),
-    ],
-    source=user_transactions_source,
-    tags={"team": "data-engineering", "domain": "relationships"},
-)
+# Note: Multiple entities not supported in Feast 0.52.0
+# user_account_features = FeatureView(
+#     name="user_account_features",
+#     entities=["user_id", "account_id"],
+#     ttl=timedelta(days=7),
+#     features=[
+#         Feature(name="user_account_count", dtype=ValueType.INT64),
+#         Feature(name="total_user_balance", dtype=ValueType.FLOAT),
+#         Feature(name="avg_user_risk_score", dtype=ValueType.FLOAT),
+#     ],
+#     source=user_transactions_source,
+#     tags={"team": "data-engineering", "domain": "relationships"},
+# )

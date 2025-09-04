@@ -30,9 +30,10 @@ transaction_entity = Entity(
 )
 
 # Composite entities for complex relationships
-user_account_entity = Entity(
-    name="user_account_id",
-    value_type=ValueType.STRING,
-    description="Composite key for user-account relationships",
-    join_keys=["user_id", "account_id"],
-)
+# Note: Multiple join keys not supported in Feast 0.52.0
+# user_account_entity = Entity(
+#     name="user_account_id",
+#     value_type=ValueType.STRING,
+#     description="Composite key for user-account relationships",
+#     join_keys=["user_id", "account_id"],
+# )
