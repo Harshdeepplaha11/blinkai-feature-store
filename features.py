@@ -34,13 +34,6 @@ user_transaction_features = FeatureView(
     name="user_transaction_features",
     entities=["user_id"],
     ttl=timedelta(days=30),
-    features=[
-        Feature(name="total_transaction_amount", dtype=ValueType.FLOAT),
-        Feature(name="transaction_count", dtype=ValueType.INT64),
-        Feature(name="avg_transaction_amount", dtype=ValueType.FLOAT),
-        Feature(name="max_transaction_amount", dtype=ValueType.FLOAT),
-        Feature(name="min_transaction_amount", dtype=ValueType.FLOAT),
-    ],
     source=user_transactions_source,
     tags={"team": "data-engineering", "domain": "payments"},
 )
@@ -49,12 +42,6 @@ account_features = FeatureView(
     name="account_features",
     entities=["account_id"],
     ttl=timedelta(days=90),
-    features=[
-        Feature(name="account_balance", dtype=ValueType.FLOAT),
-        Feature(name="account_age_days", dtype=ValueType.INT64),
-        Feature(name="risk_score", dtype=ValueType.FLOAT),
-        Feature(name="account_status", dtype=ValueType.STRING),
-    ],
     source=account_data_source,
     tags={"team": "data-engineering", "domain": "accounts"},
 )
