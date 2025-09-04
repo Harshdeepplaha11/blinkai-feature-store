@@ -1,20 +1,10 @@
 from datetime import timedelta
-from feast import Entity, Feature, FeatureView, ValueType
+from feast import Feature, FeatureView, ValueType
 from feast.infra.offline_stores.contrib.postgres_offline_store.postgres import PostgreSQLOfflineStoreConfig
 from feast.infra.offline_stores.contrib.postgres_offline_store.postgres_source import PostgreSQLSource
 
-# Define entities
-user_entity = Entity(
-    name="user_id",
-    value_type=ValueType.INT64,
-    description="User identifier",
-)
-
-account_entity = Entity(
-    name="account_id", 
-    value_type=ValueType.INT64,
-    description="Account identifier",
-)
+# Import entities from entities.py
+from entities import user_entity, account_entity
 
 # Define data sources
 user_transactions_source = PostgreSQLSource(
@@ -32,7 +22,7 @@ account_data_source = PostgreSQLSource(
 # Define feature views
 user_transaction_features = FeatureView(
     name="user_transaction_features",
-    entities=["user_id"],
+    entities=[user_entity],
     ttl=timedelta(days=30),
     source=user_transactions_source,
     tags={"team": "data-engineering", "domain": "payments"},
@@ -40,7 +30,7 @@ user_transaction_features = FeatureView(
 
 account_features = FeatureView(
     name="account_features",
-    entities=["account_id"],
+    entities=[account_entity],
     ttl=timedelta(days=90),
     source=account_data_source,
     tags={"team": "data-engineering", "domain": "accounts"},
