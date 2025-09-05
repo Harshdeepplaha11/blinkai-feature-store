@@ -2,7 +2,7 @@ project: bliink
 provider: azure
 registry:
   registry_type: sql
-  path: postgresql://feast:feast123@mlflow-postgresql.postgresql.svc.cluster.local:5432/feast
+  path: postgresql://feast_fs_user:feast_fs_123@mlflow-postgresql.postgresql.svc.cluster.local:5432/feast_feature_store
   # Optional but recommended:
   cache_ttl_seconds: 60
   sqlalchemy_config_kwargs:
@@ -14,7 +14,7 @@ offline_store:
   type: postgres
   host: mlflow-postgresql.postgresql.svc.cluster.local
   port: 5432
-  database: feast
-  user: feast
-  password: feast123
+  database: feast_feature_store
+  user: feast_fs_user
+  password: feast_fs_123
 # Feature server configuration is handled by the operator
