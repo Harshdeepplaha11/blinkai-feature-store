@@ -1,8 +1,8 @@
 project: bliink
 provider: azure
 registry:
-  registry_store_type: SqliteRegistryStore
-  path: /tmp/registry.db
+  registry_store_type: SqlRegistryStore
+  path: postgresql://feast:feast123@mlflow-postgresql.postgresql.svc.cluster.local:5432/feast
 online_store:
   type: redis
   connection_string: redis://redis.feast.svc.cluster.local:6379/0
