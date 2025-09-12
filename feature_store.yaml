@@ -11,10 +11,12 @@ online_store:
   type: redis
   connection_string: redis://redis.feast.svc.cluster.local:6379/0
 offline_store:
-  type: postgres
-  host: mlflow-postgresql.postgresql.svc.cluster.local
-  port: 5432
-  database: feast_feature_store
-  user: feast_fs_user
-  password: feast_fs_123
+  type: feast.infra.offline_stores.contrib.iceberg_offline_store.IcebergOfflineStore
+  catalog: bliinkai_catalog
+  catalog_type: rest  # or hive, glue, etc.
+  warehouse_path: abfss://iceberg-warehouse@blinkaidatalake.dfs.core.windows.net/iceberg/warehouse
+  storage_options:
+    account_name: blinkaidatalake
+    account_key: ${AZURE_STORAGE_KEY}  # Use environment variable
+entity_key_serialization_version: 2
 # Feature server configuration is handled by the operator

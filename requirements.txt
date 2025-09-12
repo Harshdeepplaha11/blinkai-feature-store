@@ -1,0 +1,30 @@
+# Feast core dependencies
+feast[postgres,redis]==0.52.0
+
+# Iceberg dependencies
+pyiceberg>=0.5.0
+pyarrow>=10.0.0
+fsspec>=2023.1.0
+adlfs>=2023.1.0
+
+# Azure dependencies
+azure-storage-blob>=12.0.0
+azure-identity>=1.12.0
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.21.0
+
+# Database drivers
+psycopg2-binary>=2.9.0
+redis>=4.0.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+
+# Jupyter for notebooks
+jupyter>=1.0.0
+ipykernel>=6.0.0
