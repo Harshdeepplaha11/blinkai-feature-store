@@ -2,38 +2,70 @@
 Environment-specific configurations for BlinkAI Feature Store.
 
 This module provides configurations for different environments and storage backends.
+All connection strings and credentials are loaded from environment variables.
 """
 
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
-def get_iceberg_config(environment: str = "azure") -> Dict[str, Any]:
+def get_feast_config() -> Dict[str, Any]:
+    """
+    Get complete Feast configuration from environment variables.
+    
+    Returns:
+        Dictionary with Feast configuration
+    """
+    return {
+        "project": os.getenv("FEAST_PROJECT", "bliink"),
+        "provider": os.getenv("FEAST_PROVIDER", "azure"),
+        "registry": {
+            "registry_type": "sql",
+            "path": os.getenv("FEAST_REGISTRY_PATH"),
+        },
+        "online_store": {
+            "type": "redis",
+            "connection_string": os.getenv("REDIS_CONNECTION_STRING"),
+        },
+        "offline_store": {
+            "type": "feast.infra.offline_stores.contrib.iceberg_offline_store.IcebergOfflineStore",
+            "catalog": os.getenv("ICEBERG_CATALOG"),
+            "catalog_type": os.getenv("ICEBERG_CATALOG_TYPE", "rest"),
+            "warehouse_path": os.getenv("ICEBERG_WAREHOUSE_PATH"),
+            "storage_options": {
+                "account_name": os.getenv("AZURE_STORAGE_ACCOUNT_NAME"),
+                "account_key": os.getenv("AZURE_STORAGE_KEY"),
+            }
+        }
+    }
+
+def get_iceberg_config(environment: str = None) -> Dict[str, Any]:
     """
     Get Iceberg configuration for the specified environment.
     
     Args:
-        environment: Environment name ("azure" or "aws")
+        environment: Environment name ("azure" or "aws"), defaults to FEAST_ENVIRONMENT
         
     Returns:
         Dictionary with Iceberg configuration
     """
+    env = environment or os.getenv("FEAST_ENVIRONMENT", "azure")
     
-    if environment.lower() == "azure":
+    if env.lower() == "azure":
         return {
-            "catalog": "bliinkai_catalog",
-            "catalog_type": "rest",
-            "warehouse_path": "abfss://iceberg-warehouse@blinkaidatalake.dfs.core.windows.net/iceberg/warehouse",
+            "catalog": os.getenv("ICEBERG_CATALOG", "bliinkai_catalog"),
+            "catalog_type": os.getenv("ICEBERG_CATALOG_TYPE", "rest"),
+            "warehouse_path": os.getenv("ICEBERG_WAREHOUSE_PATH"),
             "storage_options": {
-                "account_name": "blinkaidatalake",
+                "account_name": os.getenv("AZURE_STORAGE_ACCOUNT_NAME"),
                 "account_key": os.getenv("AZURE_STORAGE_KEY"),
             }
         }
     
-    elif environment.lower() == "aws":
+    elif env.lower() == "aws":
         return {
-            "catalog": "bliinkai_catalog",
-            "catalog_type": "glue",  # or "hive"
-            "warehouse_path": "s3://your-bucket/iceberg/warehouse",
+            "catalog": os.getenv("ICEBERG_CATALOG", "bliinkai_catalog"),
+            "catalog_type": os.getenv("ICEBERG_CATALOG_TYPE", "glue"),
+            "warehouse_path": os.getenv("ICEBERG_WAREHOUSE_PATH"),
             "storage_options": {
                 "aws_access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
                 "aws_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
@@ -42,35 +74,50 @@ def get_iceberg_config(environment: str = "azure") -> Dict[str, Any]:
         }
     
     else:
-        raise ValueError(f"Unsupported environment: {environment}")
+        raise ValueError(f"Unsupported environment: {env}")
 
-def get_data_source_config(environment: str = "azure") -> Dict[str, str]:
+def get_data_source_config(environment: str = None) -> Dict[str, str]:
     """
     Get data source table names for the specified environment.
     
     Args:
-        environment: Environment name ("azure" or "aws")
+        environment: Environment name ("azure" or "aws"), defaults to FEAST_ENVIRONMENT
         
     Returns:
         Dictionary with table names
     """
+    env = environment or os.getenv("FEAST_ENVIRONMENT", "azure")
+    catalog = os.getenv("ICEBERG_CATALOG", "bliinkai_catalog")
     
-    if environment.lower() == "azure":
-        return {
-            "transactions_table": "bliinkai_catalog.default.transactions_silver",
-            "accounts_table": "bliinkai_catalog.default.accounts_silver", 
-            "entities_table": "bliinkai_catalog.default.entities_silver",
-        }
+    return {
+        "transactions_table": f"{catalog}.default.transactions_silver",
+        "accounts_table": f"{catalog}.default.accounts_silver", 
+        "entities_table": f"{catalog}.default.entities_silver",
+    }
+
+def validate_environment_variables() -> bool:
+    """
+    Validate that all required environment variables are set.
     
-    elif environment.lower() == "aws":
-        return {
-            "transactions_table": "bliinkai_catalog.default.transactions_silver",
-            "accounts_table": "bliinkai_catalog.default.accounts_silver",
-            "entities_table": "bliinkai_catalog.default.entities_silver",
-        }
+    Returns:
+        True if all required variables are set, False otherwise
+    """
+    required_vars = [
+        "FEAST_REGISTRY_PATH",
+        "REDIS_CONNECTION_STRING", 
+        "ICEBERG_CATALOG",
+        "ICEBERG_WAREHOUSE_PATH",
+        "AZURE_STORAGE_ACCOUNT_NAME",
+        "AZURE_STORAGE_KEY",
+    ]
     
-    else:
-        raise ValueError(f"Unsupported environment: {environment}")
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        print(f"Missing required environment variables: {missing_vars}")
+        return False
+    
+    return True
 
 # Default environment
 DEFAULT_ENVIRONMENT = os.getenv("FEAST_ENVIRONMENT", "azure")

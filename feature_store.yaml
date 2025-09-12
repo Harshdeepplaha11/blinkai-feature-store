@@ -2,21 +2,21 @@ project: bliink
 provider: azure
 registry:
   registry_type: sql
-  path: postgresql://feast_fs_user:feast_fs_123@mlflow-postgresql.postgresql.svc.cluster.local:5432/feast_feature_store
+  path: ${FEAST_REGISTRY_PATH}
   # Optional but recommended:
   cache_ttl_seconds: 60
   sqlalchemy_config_kwargs:
     pool_pre_ping: true
 online_store:
   type: redis
-  connection_string: redis://redis.feast.svc.cluster.local:6379/0
+  connection_string: ${REDIS_CONNECTION_STRING}
 offline_store:
   type: feast.infra.offline_stores.contrib.iceberg_offline_store.IcebergOfflineStore
-  catalog: bliinkai_catalog
-  catalog_type: rest  # or hive, glue, etc.
-  warehouse_path: abfss://iceberg-warehouse@blinkaidatalake.dfs.core.windows.net/iceberg/warehouse
+  catalog: ${ICEBERG_CATALOG}
+  catalog_type: ${ICEBERG_CATALOG_TYPE}
+  warehouse_path: ${ICEBERG_WAREHOUSE_PATH}
   storage_options:
-    account_name: blinkaidatalake
-    account_key: ${AZURE_STORAGE_KEY}  # Use environment variable
+    account_name: ${AZURE_STORAGE_ACCOUNT_NAME}
+    account_key: ${AZURE_STORAGE_KEY}
 entity_key_serialization_version: 2
 # Feature server configuration is handled by the operator

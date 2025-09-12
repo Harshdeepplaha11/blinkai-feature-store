@@ -2,11 +2,31 @@
 """
 Feature validation script for BlinkAI Feature Store.
 
-This script validates feature definitions and data quality.
+This script validates feature definitions, environment variables, and data quality.
 """
 
 import argparse
+import sys
+import os
+
+# Add the parent directory to the path to import config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from feast import FeatureStore
+from config.environments import validate_environment_variables
+
+def validate_environment():
+    """
+    Validate that all required environment variables are set.
+    """
+    print("Validating environment variables...")
+    
+    if validate_environment_variables():
+        print("✓ All required environment variables are set")
+        return True
+    else:
+        print("✗ Missing required environment variables")
+        return False
 
 def validate_feature_store(feature_store_path: str = "."):
     """
@@ -57,15 +77,40 @@ def validate_feature_store(feature_store_path: str = "."):
             print(f"  - {ds.name}: {type(ds).__name__}")
         
         print("\n✓ Feature store validation completed successfully!")
+        return True
         
     except Exception as e:
         print(f"✗ Feature store validation failed: {e}")
-        raise
+        return False
 
-if __name__ == "__main__":
+def main():
+    """Main validation function."""
     parser = argparse.ArgumentParser(description="Validate feature store")
     parser.add_argument("--repo-path", default=".", help="Path to feature store")
+    parser.add_argument("--skip-env", action="store_true", help="Skip environment variable validation")
     
     args = parser.parse_args()
     
-    validate_feature_store(feature_store_path=args.repo_path)
+    print("🔍 BlinkAI Feature Store Validation")
+    print("=" * 50)
+    
+    # Validate environment variables first
+    if not args.skip_env:
+        env_valid = validate_environment()
+        if not env_valid:
+            print("\n❌ Environment validation failed. Use --skip-env to skip this check.")
+            sys.exit(1)
+        print()
+    
+    # Validate feature store
+    store_valid = validate_feature_store(feature_store_path=args.repo_path)
+    
+    if store_valid:
+        print("\n🎉 All validations passed!")
+        sys.exit(0)
+    else:
+        print("\n❌ Feature store validation failed.")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

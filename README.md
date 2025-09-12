@@ -88,10 +88,19 @@ pip install -r requirements.txt
 
 ### 2. Set Environment Variables
 ```bash
-# For Azure ADLS2
+# Copy the template and fill in your values
+cp env.template .env
+
+# Or set them manually:
+export FEAST_REGISTRY_PATH="postgresql://feast_fs_user:feast_fs_123@mlflow-postgresql.postgresql.svc.cluster.local:5432/feast_feature_store"
+export REDIS_CONNECTION_STRING="redis://redis.feast.svc.cluster.local:6379/0"
+export ICEBERG_CATALOG="bliinkai_catalog"
+export ICEBERG_CATALOG_TYPE="rest"
+export ICEBERG_WAREHOUSE_PATH="abfss://iceberg-warehouse@blinkaidatalake.dfs.core.windows.net/iceberg/warehouse"
+export AZURE_STORAGE_ACCOUNT_NAME="blinkaidatalake"
 export AZURE_STORAGE_KEY="your_storage_key"
 
-# For AWS S3 (if using)
+# For AWS S3 (if using instead of ADLS2)
 export AWS_ACCESS_KEY_ID="your_access_key"
 export AWS_SECRET_ACCESS_KEY="your_secret_key"
 ```
@@ -202,13 +211,37 @@ This feature repository is deployed via the Feast operator in Kubernetes:
 - **FeatureStore CR**: `bliink-fs`
 - **External Access**: LoadBalancer service
 
+## 🔧 Environment Variables
+
+All connection strings and credentials are configured through environment variables for security and flexibility:
+
+### Required Variables
+- `FEAST_REGISTRY_PATH`: PostgreSQL connection string for the registry
+- `REDIS_CONNECTION_STRING`: Redis connection string for online store
+- `ICEBERG_CATALOG`: Iceberg catalog name
+- `ICEBERG_WAREHOUSE_PATH`: Path to Iceberg warehouse
+- `AZURE_STORAGE_ACCOUNT_NAME`: Azure storage account name
+- `AZURE_STORAGE_KEY`: Azure storage account key
+
+### Optional Variables
+- `FEAST_PROJECT`: Project name (default: "bliink")
+- `FEAST_PROVIDER`: Provider type (default: "azure")
+- `FEAST_ENVIRONMENT`: Environment (default: "azure")
+- `ICEBERG_CATALOG_TYPE`: Catalog type (default: "rest")
+
+### Environment Templates
+- `env.template`: Template file with all required variables
+- Copy to `.env` and fill in your actual values
+
 ## 📚 Best Practices
 
-1. **Feature Naming**: Use consistent naming: `{domain}_{metric}_{aggregation}_{window}`
-2. **TTL Management**: Set appropriate TTLs based on feature update frequency
-3. **Data Quality**: Implement validation for feature values
-4. **Monitoring**: Track feature freshness and serving latency
-5. **Version Control**: Use semantic versioning for feature definitions
+1. **Environment Variables**: Never hardcode connection strings or credentials
+2. **Feature Naming**: Use consistent naming: `{domain}_{metric}_{aggregation}_{window}`
+3. **TTL Management**: Set appropriate TTLs based on feature update frequency
+4. **Data Quality**: Implement validation for feature values
+5. **Monitoring**: Track feature freshness and serving latency
+6. **Version Control**: Use semantic versioning for feature definitions
+7. **Security**: Use environment variables or secret management systems
 
 ## 🤝 Contributing
 

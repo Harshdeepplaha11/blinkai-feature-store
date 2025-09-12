@@ -8,14 +8,14 @@ from datetime import timedelta
 from feast import Feature, FeatureView, ValueType
 
 from ..entities import user_entity, account_entity
-from ..data_sources import transactions_source
+from ..data_sources import user_transaction_features_source, account_transaction_features_source
 
-# User-level transaction features
+# User-level transaction features (from computed Spark tables)
 user_transaction_features = FeatureView(
     name="user_transaction_features",
     entities=[user_entity],
     ttl=timedelta(days=30),
-    source=transactions_source,
+    source=user_transaction_features_source,
     features=[
         # Transaction volume features
         Feature(name="total_transaction_amount", dtype=ValueType.DOUBLE),
@@ -45,12 +45,12 @@ user_transaction_features = FeatureView(
     tags={"team": "data-engineering", "domain": "payments", "tier": "production"},
 )
 
-# Account-level transaction features
+# Account-level transaction features (from computed Spark tables)
 account_transaction_features = FeatureView(
     name="account_transaction_features", 
     entities=[account_entity],
     ttl=timedelta(days=30),
-    source=transactions_source,
+    source=account_transaction_features_source,
     features=[
         # Account transaction volume
         Feature(name="account_total_transaction_amount", dtype=ValueType.DOUBLE),

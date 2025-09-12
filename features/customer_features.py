@@ -1,46 +1,37 @@
 """
-Customer-related feature definitions.
+Customer feature definitions for BlinkAI Feature Store.
 
-This module defines features related to customer characteristics and risk.
+This module defines customer-related features computed from Spark jobs
+and stored in Iceberg tables for Feast consumption.
 """
 
 from datetime import timedelta
 from feast import Feature, FeatureView, ValueType
 
 from ..entities import customer_entity
-from ..data_sources import entities_source
+from ..data_sources import customer_features_source
 
-# Customer risk features
-customer_risk_features = FeatureView(
-    name="customer_risk_features",
+# Customer features (from computed Spark tables)
+customer_features = FeatureView(
+    name="customer_features",
     entities=[customer_entity],
-    ttl=timedelta(days=180),  # Risk scores change infrequently
-    source=entities_source,
+    ttl=timedelta(days=30),
+    source=customer_features_source,
     features=[
-        # Risk metrics
-        Feature(name="customer_risk_score", dtype=ValueType.INT64),
+        # Customer risk features
+        Feature(name="customer_risk_score", dtype=ValueType.DOUBLE),
         Feature(name="customer_risk_rating", dtype=ValueType.INT64),
-        
-        # Customer characteristics
-        Feature(name="entity_type", dtype=ValueType.STRING),
-        Feature(name="customer_entity_id", dtype=ValueType.STRING),
-    ],
-    tags={"team": "data-engineering", "domain": "customers", "tier": "production"},
-)
-
-# Customer segment features
-customer_segment_features = FeatureView(
-    name="customer_segment_features",
-    entities=[customer_entity],
-    ttl=timedelta(days=90),  # Segments may change over time
-    source=entities_source,
-    features=[
-        # Customer segmentation
         Feature(name="customer_segment", dtype=ValueType.STRING),
         
-        # Customer lifecycle
+        # Customer activity features
+        Feature(name="total_accounts", dtype=ValueType.INT64),
+        Feature(name="active_accounts", dtype=ValueType.INT64),
         Feature(name="customer_age_days", dtype=ValueType.INT64),
-        Feature(name="days_since_customer_since", dtype=ValueType.INT64),
+        
+        # Customer financial features
+        Feature(name="total_balance", dtype=ValueType.DOUBLE),
+        Feature(name="avg_account_balance", dtype=ValueType.DOUBLE),
+        Feature(name="max_account_balance", dtype=ValueType.DOUBLE),
     ],
     tags={"team": "data-engineering", "domain": "customers", "tier": "production"},
 )

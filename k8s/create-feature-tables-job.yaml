@@ -1,0 +1,95 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: create-feature-tables
+  namespace: spark-jobs
+  labels:
+    app: feature-store
+    component: table-creation
+spec:
+  type: Python
+  sparkVersion: "3.5"
+  mode: cluster
+  image: bliinkai.azurecr.io/spark-iceberg:3.5.1
+  imagePullPolicy: Always
+  serviceAccount: spark-applications
+  
+  sparkConf:
+    # Iceberg SQL Extensions
+    "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    
+    # Pod Identity configuration
+    "spark.kubernetes.driver.label.aadpodidbinding": "spark-applications"
+    "spark.kubernetes.executor.label.aadpodidbinding": "spark-applications"
+    
+    # Default catalog configuration
+    "spark.sql.defaultCatalog": "bliinkai_catalog"
+    
+    # Iceberg Catalog Configuration (using REST catalog)
+    "spark.sql.catalog.bliinkai_catalog": "org.apache.iceberg.spark.SparkCatalog"
+    "spark.sql.catalog.bliinkai_catalog.type": "rest"
+    "spark.sql.catalog.bliinkai_catalog.uri": "http://iceberg-rest-simple.iceberg.svc.cluster.local:9001"
+    "spark.sql.catalog.bliinkai_catalog.warehouse": "abfss://iceberg-warehouse@blinkaidatalake.dfs.core.windows.net/iceberg/warehouse"
+    
+    # Azure ADLS FileIO (using the Azure bundle)
+    "spark.sql.catalog.bliinkai_catalog.io-impl": "org.apache.iceberg.azure.adlsv2.ADLSFileIO"
+    "spark.sql.catalog.bliinkai_catalog.io-azure-account": "blinkaidatalake"
+    "spark.sql.catalog.bliinkai_catalog.io-azure-container": "iceberg-warehouse"
+    
+    # Azure Storage Configuration (using managed identity)
+    "spark.hadoop.fs.azure.impl": "org.apache.hadoop.fs.azure.NativeAzureFileSystem"
+    "spark.hadoop.fs.azure.account.auth.type.blinkaidatalake.dfs.core.windows.net": "OAuth"
+    "spark.hadoop.fs.azure.account.oauth.provider.type.blinkaidatalake.dfs.core.windows.net": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider"
+    "spark.hadoop.fs.azure.account.oauth2.client.id.blinkaidatalake.dfs.core.windows.net": "2e2b3dfa-9e95-49da-a595-5da483dcf6f0"
+    "spark.hadoop.fs.azure.account.oauth2.client.endpoint.blinkaidatalake.dfs.core.windows.net": "https://login.microsoftonline.com/f586ff7d-466f-461e-8acc-d7dfbca2c7b1/oauth2/token"
+    
+    # Iceberg metadata management
+    "spark.sql.catalog.bliinkai_catalog.write.metadata.delete-after-commit.enabled": "true"
+    "spark.sql.catalog.bliinkai_catalog.write.metadata.previous-versions-max": "1"
+    
+    # Kubernetes Configuration
+    "spark.kubernetes.namespace": "spark-jobs"
+    "spark.kubernetes.container.image.pullPolicy": "Always"
+    "spark.kubernetes.executor.deleteOnTermination": "true"
+    "spark.kubernetes.node.selector.agentpool": "spark"
+    "spark.kubernetes.memoryOverheadFactor": "0.1"
+    "spark.kubernetes.authenticate.driver.serviceAccountName": "spark-applications"
+    "spark.kubernetes.authenticate.executor.serviceAccountName": "spark-applications"
+    
+    # Performance Configuration
+    "spark.sql.adaptive.enabled": "true"
+    "spark.serializer": "org.apache.spark.serializer.KryoSerializer"
+    "spark.sql.adaptive.coalescePartitions.enabled": "true"
+    "spark.sql.adaptive.skewJoin.enabled": "true"
+    
+    # Driver Configuration
+    "spark.driver.cores": "1"
+    "spark.driver.memory": "2g"
+    "spark.driver.memoryOverhead": "512m"
+    
+    # Executor Configuration
+    "spark.executor.cores": "2"
+    "spark.executor.instances": "1"  # Only need 1 executor for table creation
+    "spark.executor.memory": "2g"
+    "spark.executor.memoryOverhead": "512m"
+
+  # Python script configuration
+  pythonVersion: "3"
+  mainApplicationFile: "local:///opt/spark/scripts/create_feature_tables.py"
+  
+  # Environment variables
+  env:
+    - name: ICEBERG_CATALOG
+      value: "bliinkai_catalog"
+    - name: ICEBERG_WAREHOUSE_PATH
+      value: "abfss://iceberg-warehouse@blinkaidatalake.dfs.core.windows.net/iceberg/warehouse"
+    - name: AZURE_STORAGE_ACCOUNT_NAME
+      value: "blinkaidatalake"
+    - name: AZURE_STORAGE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: azure-storage-secret
+          key: connection-string
+
+
+
