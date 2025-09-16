@@ -151,5 +151,3 @@ class SparkFeatureComputer(ABC):
         if self.spark:
             self.spark.stop()
 
-
-

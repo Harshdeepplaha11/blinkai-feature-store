@@ -91,5 +91,3 @@ spec:
           name: azure-storage-secret
           key: connection-string
 
-
-
